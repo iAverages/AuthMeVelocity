@@ -1,4 +1,4 @@
-package fr.xephi.authmebungee.config;
+package fr.xephi.authmebungee.common.config;
 
 import ch.jalu.configme.Comment;
 import ch.jalu.configme.SettingsHolder;
@@ -9,7 +9,7 @@ import java.util.List;
 import static ch.jalu.configme.properties.PropertyInitializer.newListProperty;
 import static ch.jalu.configme.properties.PropertyInitializer.newProperty;
 
-public class BungeeConfigProperties implements SettingsHolder {
+public class ProxyConfigProperties implements SettingsHolder {
 
     @Comment("List of servers in the network where authme is installed")
     public static final Property<List<String>> AUTH_SERVERS =
@@ -40,8 +40,20 @@ public class BungeeConfigProperties implements SettingsHolder {
     @Comment("If sendOnLogout is enabled, unlogged users will be sent to this server!")
     public static final Property<String> SEND_ON_LOGOUT_TARGET =
         newProperty("unloggedUserServer", "");
+    @Comment({
+        "Enables velocity plugin channel messages support on BungeeCord",
+        "THIS OPTION ONLY WORKS ON BUNGEECORD",
+        "* use this option if this is a BungeeCord server running with an AuthMeReloaded counterpart using 'velocity: true'"})
+    public static final Property<Boolean> VELOCITY_MESSAGING =
+        newProperty("enableVelocityMessagingOnBungeecord", false);
+    @Comment("Write log on file")
+    public static final Property<Boolean> USE_LOGGING =
+        newProperty("useLogging", false);
+    @Comment("LogLevel: INFO, FINE, DEBUG")
+    public static final Property<String> LOG_LEVEL =
+        newProperty("logLevel", "INFO");
 
-    private BungeeConfigProperties() {
+    private ProxyConfigProperties() {
     }
 
 }

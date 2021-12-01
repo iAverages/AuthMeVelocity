@@ -1,12 +1,13 @@
-package fr.xephi.authmebungee.listeners;
+package fr.xephi.authmebungee.bungeecord.listeners;
 
 import ch.jalu.configme.SettingsManager;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import fr.xephi.authmebungee.config.BungeeConfigProperties;
-import fr.xephi.authmebungee.config.SettingsDependent;
-import fr.xephi.authmebungee.data.AuthPlayer;
-import fr.xephi.authmebungee.services.AuthPlayerManager;
+import fr.xephi.authmebungee.bungeecord.AuthMeBungee;
+import fr.xephi.authmebungee.common.config.ProxyConfigProperties;
+import fr.xephi.authmebungee.common.config.SettingsDependent;
+import fr.xephi.authmebungee.bungeecord.data.BungeeAuthPlayer;
+import fr.xephi.authmebungee.bungeecord.services.BungeeAuthPlayerManager;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
@@ -23,7 +24,8 @@ import java.util.List;
 public class BungeePlayerListener implements Listener, SettingsDependent {
 
     // Services
-    private final AuthPlayerManager authPlayerManager;
+    private final BungeeAuthPlayerManager bungeeAuthPlayerManager;
+    private final AuthMeBungee authMeBungee;
 
     // Settings
     private boolean isAutoLoginEnabled;
@@ -34,41 +36,53 @@ public class BungeePlayerListener implements Listener, SettingsDependent {
     private boolean isCommandsRequireAuth;
     private List<String> commandWhitelist;
     private boolean chatRequiresAuth;
+    private boolean isVelocitySupportEnabled;
+
+    private String pluginChannel;
 
     @Inject
-    public BungeePlayerListener(final SettingsManager settings, final AuthPlayerManager authPlayerManager) {
-        this.authPlayerManager = authPlayerManager;
+    public BungeePlayerListener(final SettingsManager settings, final BungeeAuthPlayerManager bungeeAuthPlayerManager, AuthMeBungee authMeBungee) {
+        this.bungeeAuthPlayerManager = bungeeAuthPlayerManager;
+        this.authMeBungee = authMeBungee;
         reload(settings);
     }
 
     @Override
     public void reload(final SettingsManager settings) {
-        isAutoLoginEnabled = settings.getProperty(BungeeConfigProperties.AUTOLOGIN);
-        isServerSwitchRequiresAuth = settings.getProperty(BungeeConfigProperties.SERVER_SWITCH_REQUIRES_AUTH);
-        requiresAuthKickMessage = settings.getProperty(BungeeConfigProperties.SERVER_SWITCH_KICK_MESSAGE);
+        isAutoLoginEnabled = settings.getProperty(ProxyConfigProperties.AUTOLOGIN);
+        isServerSwitchRequiresAuth = settings.getProperty(ProxyConfigProperties.SERVER_SWITCH_REQUIRES_AUTH);
+        requiresAuthKickMessage = settings.getProperty(ProxyConfigProperties.SERVER_SWITCH_KICK_MESSAGE);
         authServers = new ArrayList<>();
-        for (final String server : settings.getProperty(BungeeConfigProperties.AUTH_SERVERS)) {
+        for (final String server : settings.getProperty(ProxyConfigProperties.AUTH_SERVERS)) {
             authServers.add(server.toLowerCase());
         }
-        allServersAreAuthServers = settings.getProperty(BungeeConfigProperties.ALL_SERVERS_ARE_AUTH_SERVERS);
-        isCommandsRequireAuth = settings.getProperty(BungeeConfigProperties.COMMANDS_REQUIRE_AUTH);
+        allServersAreAuthServers = settings.getProperty(ProxyConfigProperties.ALL_SERVERS_ARE_AUTH_SERVERS);
+        isCommandsRequireAuth = settings.getProperty(ProxyConfigProperties.COMMANDS_REQUIRE_AUTH);
         commandWhitelist = new ArrayList<>();
-        for (final String command : settings.getProperty(BungeeConfigProperties.COMMANDS_WHITELIST)) {
+        for (final String command : settings.getProperty(ProxyConfigProperties.COMMANDS_WHITELIST)) {
             commandWhitelist.add(command.toLowerCase());
         }
-        chatRequiresAuth = settings.getProperty(BungeeConfigProperties.CHAT_REQUIRES_AUTH);
+        chatRequiresAuth = settings.getProperty(ProxyConfigProperties.CHAT_REQUIRES_AUTH);
+
+
+        isVelocitySupportEnabled = settings.getProperty(ProxyConfigProperties.VELOCITY_MESSAGING);
+        if(isVelocitySupportEnabled) {
+            pluginChannel = "authme:main";
+        } else {
+            pluginChannel = "BungeeCord";
+        }
     }
 
     @EventHandler
     public void onPlayerJoin(final PostLoginEvent event) {
         // Register player in our list
-        authPlayerManager.addAuthPlayer(event.getPlayer());
+        bungeeAuthPlayerManager.addAuthPlayer(event.getPlayer());
     }
 
     @EventHandler
     public void onPlayerDisconnect(final PlayerDisconnectEvent event) {
         // Remove player from out list
-        authPlayerManager.removeAuthPlayer(event.getPlayer());
+        bungeeAuthPlayerManager.removeAuthPlayer(event.getPlayer());
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -84,8 +98,8 @@ public class BungeePlayerListener implements Listener, SettingsDependent {
         final ProxiedPlayer player = (ProxiedPlayer) event.getSender();
 
         // Filter only unauthenticated players
-        final AuthPlayer authPlayer = authPlayerManager.getAuthPlayer(player);
-        if (authPlayer != null && authPlayer.isLogged()) {
+        final BungeeAuthPlayer bungeeAuthPlayer = bungeeAuthPlayerManager.getAuthPlayer(player);
+        if (bungeeAuthPlayer != null && bungeeAuthPlayer.isLogged()) {
             return;
         }
         // Only in auth servers
@@ -113,8 +127,8 @@ public class BungeePlayerListener implements Listener, SettingsDependent {
         final ProxiedPlayer player = (ProxiedPlayer) event.getSender();
 
         // Filter only unauthenticated players
-        final AuthPlayer authPlayer = authPlayerManager.getAuthPlayer(player);
-        if (authPlayer != null && authPlayer.isLogged()) {
+        final BungeeAuthPlayer bungeeAuthPlayer = bungeeAuthPlayerManager.getAuthPlayer(player);
+        if (bungeeAuthPlayer != null && bungeeAuthPlayer.isLogged()) {
             return;
         }
         // Only in auth servers
@@ -136,17 +150,18 @@ public class BungeePlayerListener implements Listener, SettingsDependent {
     public void onPlayerConnectedToServer(final ServerSwitchEvent event) {
         final ProxiedPlayer player = event.getPlayer();
         final ServerInfo server = player.getServer().getInfo();
-        final AuthPlayer authPlayer = authPlayerManager.getAuthPlayer(player);
-        final boolean isAuthenticated = authPlayer != null && authPlayer.isLogged();
+        final BungeeAuthPlayer bungeeAuthPlayer = bungeeAuthPlayerManager.getAuthPlayer(player);
+        final boolean isAuthenticated = bungeeAuthPlayer != null && bungeeAuthPlayer.isLogged();
 
         if (isAuthenticated && isAuthServer(server)) {
             // If AutoLogin enabled, notify the server
             if (isAutoLoginEnabled) {
                 final ByteArrayDataOutput out = ByteStreams.newDataOutput();
                 out.writeUTF("AuthMe.v2");
+                if (isVelocitySupportEnabled) out.writeUTF(authMeBungee.getInstanceUUID().toString());
                 out.writeUTF("perform.login");
                 out.writeUTF(event.getPlayer().getName());
-                server.sendData("BungeeCord", out.toByteArray(), false);
+                server.sendData(pluginChannel, out.toByteArray(), false);
             }
         }
     }
@@ -158,8 +173,8 @@ public class BungeePlayerListener implements Listener, SettingsDependent {
         }
 
         final ProxiedPlayer player = event.getPlayer();
-        final AuthPlayer authPlayer = authPlayerManager.getAuthPlayer(player);
-        final boolean isAuthenticated = authPlayer != null && authPlayer.isLogged();
+        final BungeeAuthPlayer bungeeAuthPlayer = bungeeAuthPlayerManager.getAuthPlayer(player);
+        final boolean isAuthenticated = bungeeAuthPlayer != null && bungeeAuthPlayer.isLogged();
 
         // Skip logged users
         if (isAuthenticated) {

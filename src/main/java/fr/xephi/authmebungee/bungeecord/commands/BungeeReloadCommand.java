@@ -1,8 +1,8 @@
-package fr.xephi.authmebungee.commands;
+package fr.xephi.authmebungee.bungeecord.commands;
 
 import ch.jalu.configme.SettingsManager;
 import ch.jalu.injector.factory.SingletonStore;
-import fr.xephi.authmebungee.config.SettingsDependent;
+import fr.xephi.authmebungee.common.config.SettingsDependent;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.ComponentBuilder;
