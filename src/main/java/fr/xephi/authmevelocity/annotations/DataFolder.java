@@ -1,4 +1,4 @@
-package fr.xephi.authmebungee.annotations;
+package fr.xephi.authmevelocity.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

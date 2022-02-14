@@ -1,4 +1,4 @@
-package fr.xephi.authmebungee.config;
+package fr.xephi.authmevelocity.config;
 
 import ch.jalu.configme.SettingsManager;
 

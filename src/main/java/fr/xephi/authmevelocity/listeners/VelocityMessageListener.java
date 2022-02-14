@@ -1,22 +1,23 @@
-package fr.xephi.authmebungee.listeners;
+package fr.xephi.authmevelocity.listeners;
 
 import ch.jalu.configme.SettingsManager;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
-import fr.xephi.authmebungee.config.BungeeConfigProperties;
-import fr.xephi.authmebungee.config.SettingsDependent;
-import fr.xephi.authmebungee.data.AuthPlayer;
-import fr.xephi.authmebungee.services.AuthPlayerManager;
-import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.connection.Server;
-import net.md_5.bungee.api.event.PluginMessageEvent;
-import net.md_5.bungee.api.plugin.Listener;
-import net.md_5.bungee.event.EventHandler;
+import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.connection.PluginMessageEvent;
+import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.ServerConnection;
+import fr.xephi.authmevelocity.AuthMeVelocity;
+import fr.xephi.authmevelocity.config.VelocityConfigProperties;
+import fr.xephi.authmevelocity.config.SettingsDependent;
+import fr.xephi.authmevelocity.data.AuthPlayer;
+import fr.xephi.authmevelocity.services.AuthPlayerManager;
+import fr.xephi.authmevelocity.utils.PluginChannels;
 
 import javax.inject.Inject;
+import java.util.Optional;
 
-public class BungeeMessageListener implements Listener, SettingsDependent {
+public class VelocityMessageListener implements SettingsDependent {
 
     // Services
     private final AuthPlayerManager authPlayerManager;
@@ -26,30 +27,27 @@ public class BungeeMessageListener implements Listener, SettingsDependent {
     private String sendOnLogoutTarget;
 
     @Inject
-    public BungeeMessageListener(final SettingsManager settings, final AuthPlayerManager authPlayerManager) {
+    public VelocityMessageListener(final SettingsManager settings, final AuthPlayerManager authPlayerManager) {
         this.authPlayerManager = authPlayerManager;
         reload(settings);
     }
 
     @Override
     public void reload(final SettingsManager settings) {
-        isSendOnLogoutEnabled = settings.getProperty(BungeeConfigProperties.ENABLE_SEND_ON_LOGOUT);
-        sendOnLogoutTarget = settings.getProperty(BungeeConfigProperties.SEND_ON_LOGOUT_TARGET);
+        isSendOnLogoutEnabled = settings.getProperty(VelocityConfigProperties.ENABLE_SEND_ON_LOGOUT);
+        sendOnLogoutTarget = settings.getProperty(VelocityConfigProperties.SEND_ON_LOGOUT_TARGET);
     }
 
-    @EventHandler
+    @Subscribe
     public void onPluginMessage(final PluginMessageEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
-
         // Check if the message is for a server (ignore client messages)
-        if (!event.getTag().equals("BungeeCord")) {
+        if (!event.getIdentifier().equals(PluginChannels.MODERN_BUNGEE_CHANNEL) &&
+            !event.getIdentifier().equals(PluginChannels.LEGACY_BUNGEE_CHANNEL)) {
             return;
         }
 
         // Check if a player is not trying to send us a fake message
-        if (!(event.getSender() instanceof Server)) {
+        if (!(event.getSource() instanceof ServerConnection)) {
             return;
         }
 
@@ -57,7 +55,7 @@ public class BungeeMessageListener implements Listener, SettingsDependent {
         final ByteArrayDataInput in = ByteStreams.newDataInput(event.getData());
 
         // Accept only broadcasts
-        if(!in.readUTF().equals("Forward")) {
+        if (!in.readUTF().equals("Forward")) {
             return;
         }
         in.readUTF(); // Skip ONLINE/ALL parameter
@@ -97,15 +95,15 @@ public class BungeeMessageListener implements Listener, SettingsDependent {
     private void handleOnLogout(final ByteArrayDataInput in) {
         final String name = in.readUTF();
         final AuthPlayer authPlayer = authPlayerManager.getAuthPlayer(name);
-        if (authPlayer != null) {
-            authPlayer.setLogged(false);
-            if (isSendOnLogoutEnabled) {
-                final ProxiedPlayer player = authPlayer.getPlayer();
-                if (player != null) {
-                    player.connect(ProxyServer.getInstance().getServerInfo(sendOnLogoutTarget));
-                }
-            }
+        if (authPlayer == null) {
+            return;
+        }
+        authPlayer.setLogged(false);
+        if (isSendOnLogoutEnabled) {
+            Optional<Player> player = authPlayer.getPlayer();
+            player.ifPresent(p ->
+                AuthMeVelocity.getInstance().getProxy().getServer(sendOnLogoutTarget)
+                    .ifPresent(server -> p.createConnectionRequest(server).connect()));
         }
     }
-
 }

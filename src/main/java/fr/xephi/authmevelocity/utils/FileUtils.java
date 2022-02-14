@@ -1,4 +1,4 @@
-package fr.xephi.authmebungee.utils;
+package fr.xephi.authmevelocity.utils;
 
 import java.io.File;
 import java.io.IOException;

@@ -1,11 +1,13 @@
-package fr.xephi.authmebungee.data;
+package fr.xephi.authmevelocity.data;
 
-import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
+import com.velocitypowered.api.proxy.Player;
+import fr.xephi.authmevelocity.AuthMeVelocity;
+
+import java.util.Optional;
 
 public class AuthPlayer {
 
-    private String name;
+    private final String name;
     private boolean isLogged;
 
     public AuthPlayer(String name, boolean isLogged) {
@@ -29,17 +31,12 @@ public class AuthPlayer {
         this.isLogged = isLogged;
     }
 
-    public ProxiedPlayer getPlayer() {
-        for (ProxiedPlayer current : ProxyServer.getInstance().getPlayers()) {
-            if (current.getName().equalsIgnoreCase(name)) {
-                return current;
-            }
-        }
-        return null;
+    public Optional<Player> getPlayer() {
+        return AuthMeVelocity.getInstance().getProxy().getPlayer(this.name);
     }
 
     public boolean isOnline() {
-        return getPlayer() != null;
+        return getPlayer().isPresent();
     }
 
 }

@@ -1,4 +1,4 @@
-package fr.xephi.authmebungee.config;
+package fr.xephi.authmevelocity.config;
 
 import ch.jalu.configme.SettingsHolder;
 import ch.jalu.configme.SettingsManager;
@@ -12,9 +12,9 @@ import java.io.File;
  */
 public abstract class SettingsProvider implements Provider<SettingsManager> {
 
-    private File dataFolder;
+    private final File dataFolder;
 
-    private Class<? extends SettingsHolder> properties;
+    private final Class<? extends SettingsHolder> properties;
 
     protected SettingsProvider(File dataFolder, Class<? extends SettingsHolder> properties) {
         this.dataFolder = dataFolder;

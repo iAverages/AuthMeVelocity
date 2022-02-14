@@ -5,13 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.xephi</groupId>
-    <artifactId>authmebungee</artifactId>
+    <artifactId>authmevelocity</artifactId>
     <version>2.2.0-SNAPSHOT</version>
 
-    <name>AuthMeBungee</name>
-    <description>Bungeecord addon for AuthMe!</description>
-    <inceptionYear>2017</inceptionYear>
-    <url>https://www.spigotmc.org/resources/authmebungee.50219/</url>
+    <name>AuthMeVelocity</name>
+    <description>Velocity addon for AuthMe!</description>
+    <inceptionYear>2022</inceptionYear>
+    <url>https://github.com/iAverages/AuthMeVelocity</url>
 
     <organization>
         <name>AuthMe-Team</name>
@@ -19,31 +19,15 @@
     </organization>
 
     <scm>
-        <connection>scm:git:https://github.com/AuthMe/AuthMeBungee.git</connection>
-        <developerConnection>scm:git:git@github.com:AuthMe/AuthMeBungee.git</developerConnection>
-        <url>https://github.com/AuthMe/AuthMeBungee.git</url>
+        <connection>scm:git:https://github.com/iAverages/AuthMeVelocity.git</connection>
+        <developerConnection>scm:git:git@github.com:iAverages/AuthMeVelocity.git</developerConnection>
+        <url>https://github.com/iAverages/AuthMeVelocity.git</url>
     </scm>
-
-    <ciManagement>
-        <system>jenkins</system>
-        <url>http://ci.codemc.org/job/AuthMeBungee/</url>
-    </ciManagement>
 
     <issueManagement>
         <system>GitHub</system>
-        <url>https://github.com/AuthMe/AuthMeBungee/issues</url>
+        <url>https://github.com/iAverages/AuthMeVelocity/issues</url>
     </issueManagement>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>codemc-snapshots</id>
-            <url>https://repo.codemc.org/repository/maven-snapshots/</url>
-        </snapshotRepository>
-        <repository>
-            <id>codemc-releases</id>
-            <url>https://repo.codemc.org/repository/maven-releases/</url>
-        </repository>
-    </distributionManagement>
 
     <licenses>
         <license>
@@ -160,27 +144,23 @@
                     <relocations>
                         <relocation>
                             <pattern>javax.annotation</pattern>
-                            <shadedPattern>fr.xephi.authmebungee.libs.javax.annotation</shadedPattern>
+                            <shadedPattern>fr.xephi.authmevelocity.libs.javax.annotation</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>javax.inject</pattern>
-                            <shadedPattern>fr.xephi.authmebungee.libs.javax.inject</shadedPattern>
+                            <shadedPattern>fr.xephi.authmevelocity.libs.javax.inject</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>ch.jalu.injector</pattern>
-                            <shadedPattern>fr.xephi.authmebungee.libs.jalu.injector</shadedPattern>
+                            <shadedPattern>fr.xephi.authmevelocity.libs.jalu.injector</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>org.yaml.snakeyaml</pattern>
-                            <shadedPattern>fr.xephi.authmebungee.libs.yaml.snakeyaml</shadedPattern>
+                            <shadedPattern>fr.xephi.authmevelocity.libs.yaml.snakeyaml</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>ch.jalu.configme</pattern>
-                            <shadedPattern>fr.xephi.authmebungee.libs.jalu.configme</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>org.bstats</pattern>
-                            <shadedPattern>fr.xephi.authmebungee.libs.org.bstats</shadedPattern>
+                            <shadedPattern>fr.xephi.authmevelocity.libs.jalu.configme</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
@@ -199,10 +179,10 @@
     </build>
 
     <repositories>
-        <!-- Bungeecord repository -->
+        <!-- Velocity API -->
         <repository>
-            <id>oss-repo</id>
-            <url>http://oss.sonatype.org/content/groups/public</url>
+            <id>velocity</id>
+            <url>https://repo.velocitypowered.com/snapshots/</url>
         </repository>
         <!-- CodeMc repository -->
         <repository>
@@ -228,28 +208,12 @@
             <scope>compile</scope>
         </dependency>
 
-        <!-- Bungeecord API -->
+        <!-- Velocity API-->
         <dependency>
-            <groupId>net.md-5</groupId>
-            <artifactId>bungeecord-api</artifactId>
-            <version>1.16-R0.4</version>
-            <type>jar</type>
+            <groupId>com.velocitypowered</groupId>
+            <artifactId>velocity-api</artifactId>
+            <version>3.0.1-SNAPSHOT</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.md-5</groupId>
-            <artifactId>bungeecord-api</artifactId>
-            <version>1.16-R0.4</version>
-            <type>javadoc</type>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- Metrics -->
-        <dependency>
-            <groupId>org.bstats</groupId>
-            <artifactId>bstats-bungeecord</artifactId>
-            <version>2.2.1</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

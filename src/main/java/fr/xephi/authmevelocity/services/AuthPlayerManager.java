@@ -1,7 +1,7 @@
-package fr.xephi.authmebungee.services;
+package fr.xephi.authmevelocity.services;
 
-import fr.xephi.authmebungee.data.AuthPlayer;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
+import com.velocitypowered.api.proxy.Player;
+import fr.xephi.authmevelocity.data.AuthPlayer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public class AuthPlayerManager {
 
-    private Map<String, AuthPlayer> players;
+    private final Map<String, AuthPlayer> players;
 
     public AuthPlayerManager() {
         players = new HashMap<>();
@@ -21,23 +21,23 @@ public class AuthPlayerManager {
         players.put(player.getName(), player);
     }
 
-    public void addAuthPlayer(ProxiedPlayer player) {
-        addAuthPlayer(new AuthPlayer(player.getName().toLowerCase()));
+    public void addAuthPlayer(Player player) {
+        addAuthPlayer(new AuthPlayer(player.getUsername().toLowerCase()));
     }
 
     public void removeAuthPlayer(String name) {
         players.remove(name.toLowerCase());
     }
 
-    public void removeAuthPlayer(ProxiedPlayer player) {
-        removeAuthPlayer(player.getName());
+    public void removeAuthPlayer(Player player) {
+        removeAuthPlayer(player.getUsername());
     }
 
     public AuthPlayer getAuthPlayer(String name) {
         return players.get(name.toLowerCase());
     }
 
-    public AuthPlayer getAuthPlayer(ProxiedPlayer player) {
-        return getAuthPlayer(player.getName());
+    public AuthPlayer getAuthPlayer(Player player) {
+        return getAuthPlayer(player.getUsername());
     }
 }
